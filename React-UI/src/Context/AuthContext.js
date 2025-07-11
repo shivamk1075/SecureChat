@@ -36,44 +36,50 @@
 import { createContext, useEffect, useReducer } from "react";
 import AuthReducer from "./AuthReducer";
 
-// Get the user data string from localStorage
-const storedUser = localStorage.getItem("user");
+// Safely parse localStorage user
+let parsedUser = null;
+try {
+  const storedUser = localStorage.getItem("user");
+  // Avoid parsing "undefined", null, or invalid JSON
+  if (storedUser && storedUser !== "undefined") {
+    parsedUser = JSON.parse(storedUser);
+  }
+} catch (err) {
+  console.error("Invalid user JSON in localStorage:", err);
+  localStorage.removeItem("user"); // optional: clean it up
+}
 
-// Correctly parse the user data, handling the case where it doesn't exist
+// Initial auth state
 const INITIAL_STATE = {
-    // If storedUser exists, parse it. Otherwise, set it to null.
-    user: storedUser ? JSON.parse(storedUser) : null,
-    isFetching: false,
-    error: false
+  user: parsedUser,
+  isFetching: false,
+  error: false,
 };
 
-/* Reads the data from the Provider and changes INITIAL_STATE */
+// Create context
 export const AuthContext = createContext(INITIAL_STATE);
 
-/* Children here are the Components that need to get the data. */
+// Context provider
 export const AuthContextProvider = ({ children }) => {
-    const [state, dispatch] = useReducer(AuthReducer, INITIAL_STATE);
+  const [state, dispatch] = useReducer(AuthReducer, INITIAL_STATE);
 
-    useEffect(() => {
-        // Only set the item if state.user is not null or undefined
-        if (state.user) {
-            localStorage.setItem("user", JSON.stringify(state.user));
-        } else {
-            // Remove the item from localStorage if the user is logged out
-            localStorage.removeItem("user");
-        }
-    }, [state.user]);
+  // Sync to localStorage when user state changes
+  useEffect(() => {
+    if (state.user !== undefined) {
+      localStorage.setItem("user", JSON.stringify(state.user));
+    }
+  }, [state.user]);
 
-    return (
-        <AuthContext.Provider
-            value={{
-                user: state.user,
-                isFetching: state.isFetching,
-                error: state.error,
-                dispatch
-            }}
-        >
-            {children}
-        </AuthContext.Provider>
-    );
+  return (
+    <AuthContext.Provider
+      value={{
+        user: state.user,
+        isFetching: state.isFetching,
+        error: state.error,
+        dispatch,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 };
