@@ -91,7 +91,7 @@ mongoose.connect(
 );
 
 app.get("/",(req,res)=>{
-  res.send("Welcome to the AmigoChat API")
+  res.send("Welcome to the API")
 })
 
 /* Port Listening In */
