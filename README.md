@@ -1,6 +1,7 @@
-# Realtime Chat App
+# SecureChat App
 
 A modern real-time chat platform with a robust Node.js backend and a sleek React frontend.
+[WebUI](https://securechat-ui.onrender.com/)
 
 ## Backend
 
